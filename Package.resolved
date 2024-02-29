@@ -8,6 +8,15 @@
         "revision" : "c8ed701b513cf5177118a175d85fbbbcd707ab41",
         "version" : "1.3.0"
       }
+    },
+    {
+      "identity" : "swiftychrono",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/batmac/SwiftyChrono",
+      "state" : {
+        "branch" : "master",
+        "revision" : "e1bf3bde0f09112909157360b6bf39302f10ae5f"
+      }
     }
   ],
   "version" : 2

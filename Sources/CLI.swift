@@ -1,5 +1,6 @@
 import ArgumentParser
 import EventKit
+import SwiftyChrono
 
 @main
 struct CLI: AsyncParsableCommand {
@@ -10,6 +11,8 @@ struct CLI: AsyncParsableCommand {
     enum Err: Error {
         typealias RawValue = String
         case NoPermission
+        case UnsupportedDateFormat(String)
+        case FailedToSave(Error)
     }
 }
 
@@ -32,18 +35,35 @@ struct AddEvent: AsyncParsableCommand {
     @Option(help: "Title of event")
     var title: String
     
+    @Option(help: "The start date as date string")
+    var startDate: String
+    
+    @Option(help: "The end date as date string")
+    var endDate: String
+    
     func run() async throws {
+        let chrono = Chrono()
+        guard let startDate = chrono.parseDate(text: startDate, refDate: Date()) else {
+            throw CLI.Err.UnsupportedDateFormat(startDate)
+        }
+        guard let endDate = chrono.parseDate(text: endDate, refDate: startDate) else {
+            throw CLI.Err.UnsupportedDateFormat(endDate)
+        }
+
         let store = EKEventStore()
-        
         let event = EKEvent(eventStore: store)
         event.title = title
         event.calendar = store.defaultCalendarForNewEvents
+        event.startDate = startDate
+        event.endDate = endDate
         
-        // TODO: Date Parsing
-        event.startDate = Date()
-        event.endDate = event.startDate.addingTimeInterval(3600)
+        do {
+            try store.save(event, span: .thisEvent, commit: true)
+        } catch let e {
+            print("Failed to add event - title: \(title), startDate: \(startDate), endDate: \(endDate)")
+            throw CLI.Err.FailedToSave(e)
+        }
         
-        
-        try store.save(event, span: .thisEvent, commit: true)
+        print("Added event - title: \(title), startDate: \(startDate), endDate: \(endDate)")
     }
 }
