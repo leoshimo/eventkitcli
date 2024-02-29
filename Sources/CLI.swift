@@ -60,10 +60,10 @@ struct AddEvent: AsyncParsableCommand {
         do {
             try store.save(event, span: .thisEvent, commit: true)
         } catch let e {
-            print("Failed to add event - title: \(title), startDate: \(startDate), endDate: \(endDate)")
+            print("Failed to add event - title: \(title), startDate: (\(startDate.stringForDisplay())), endDate: (\(endDate.stringForDisplay()))")
             throw CLI.Err.FailedToSave(e)
         }
         
-        print("Added event - title: \(title), startDate: \(startDate), endDate: \(endDate)")
+        print("Added event - title: \(title), startDate: (\(startDate.stringForDisplay())), endDate: (\(endDate.stringForDisplay()))")
     }
 }
