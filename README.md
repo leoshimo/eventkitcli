@@ -30,4 +30,4 @@ $ eventkitcli add-event --title "My Event" \
 
 1. Install [mint](https://github.com/yonaskolb/Mint)
 2. Add `~/.mint/bin` to shell `PATH`
-3. Run `mint install leoshimo/eventkitcli@main`
+3. Run `mint install --force leoshimo/eventkitcli@main` (initial installation and upgrades)
