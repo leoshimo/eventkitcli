@@ -20,7 +20,12 @@ struct Setup: AsyncParsableCommand {
     static var configuration = CommandConfiguration(abstract: "Setup CLI")
     func run() async throws {
         let store = EKEventStore()
-        let granted = try await store.requestAccess(to: .event)
+        
+        let granted = if #available(macOS 14.0, *) {
+            try await store.requestFullAccessToEvents()
+        } else {
+            try await store.requestAccess(to: .event)
+        }
         if granted {
             print("Permissions are granted")
         } else {
