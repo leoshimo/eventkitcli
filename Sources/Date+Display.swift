@@ -7,7 +7,6 @@
 import Foundation
 
 extension Date {
-    
     func asDateTimeString() -> String {
         let df = DateFormatter()
         df.locale = Locale.current
@@ -23,5 +22,4 @@ extension Date {
         df.timeStyle = .none
         return df.string(from: self)
     }
-
 }
