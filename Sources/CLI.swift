@@ -7,7 +7,7 @@ struct CLI: AsyncParsableCommand {
     static var configuration = CommandConfiguration(
         commandName: "eventkitcli",
         abstract: "A CLI to EventKit Framework",
-        subcommands: [Setup.self, AddEvent.self, GetEvents.self])
+        subcommands: [Setup.self, AddEvent.self, GetEvents.self, ParseDate.self])
 
     enum Err: Error {
         typealias RawValue = String
@@ -117,4 +117,21 @@ struct GetEvents: AsyncParsableCommand {
         }
         return "title: \"\(event.title ?? "NO TITLE")\", \(time)"
     }
+}
+
+struct ParseDate: AsyncParsableCommand {
+    static var configuration = CommandConfiguration(abstract: "Parse a string into date")
+
+    @Argument(help: "The date expression to parse")
+    var date: String
+
+    func run() async throws {
+        let chrono = Chrono()
+        let now = Date()
+        guard let date = chrono.parseDate(text: date, refDate: now) else {
+            throw CLI.Err.UnsupportedDateFormat(date)
+        }
+        print(date.asDateTimeString())
+    }
+
 }
