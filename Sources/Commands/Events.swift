@@ -31,8 +31,8 @@ struct GetEvents: AsyncParsableCommand {
     @Flag(help: "Whether or not to skip all-day events in results")
     var excludeAllDay: Bool = false
     
-    @Option(name: [.customLong("calendar"), .short], help: "The calendar to from. Repeat to specify multiple")
-    var calendarIds: [String]
+    @Option(name: [.customLong("calendar"), .short], help: "The calendar to from. Repeat to specify multiple. If omitted, searches all calendars.")
+    var calendarIds: [String] = []
 
     func run() async throws {
         let chrono = Chrono()
