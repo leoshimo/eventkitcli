@@ -7,13 +7,14 @@ struct CLI: AsyncParsableCommand {
     static var configuration = CommandConfiguration(
         commandName: "eventkitcli",
         abstract: "A CLI to EventKit Framework",
-        subcommands: [Setup.self, AddEvent.self, GetEvents.self, ParseDate.self, GetCalendars.self])
+        subcommands: [Setup.self, AddEvent.self, GetEvents.self, ParseDate.self, Calendars.self])
 
     enum Err: Error {
         typealias RawValue = String
         case NoPermission
         case UnsupportedDateFormat(String)
         case FailedToSave(Error)
+        case NoCalendarsFound
     }
 }
 
@@ -116,31 +117,6 @@ struct GetEvents: AsyncParsableCommand {
             "startDate: \(event.startDate.asDateTimeString()), endDate: \(event.endDate.asDateTimeString())"
         }
         return "title: \"\(event.title ?? "NO TITLE")\", \(time)"
-    }
-}
-
-struct GetCalendars: AsyncParsableCommand {
-    static var configuration = CommandConfiguration(abstract: "Get set of available calendars")
-    
-    @Flag(help: "Return only the default calendar if any")
-    var onlyDefault: Bool = false
-
-    func run() async throws {
-        
-        let store = EKEventStore()
-        let calendars = store.calendars(for: .event)
-        let defaultCalendarId = store.defaultCalendarForNewEvents?.calendarIdentifier
-        for c in calendars {
-            let isDefault = defaultCalendarId != nil && defaultCalendarId == c.calendarIdentifier
-            if onlyDefault && !isDefault {
-                continue
-            }
-            if isDefault {
-                print("\(c.calendarIdentifier) - \(c.title) *DEFAULT*")
-            } else  {
-                print("\(c.calendarIdentifier) - \(c.title)")
-            }
-        }
     }
 }
 
