@@ -5,9 +5,10 @@ import SwiftyChrono
 @main
 struct CLI: AsyncParsableCommand {
     static var configuration = CommandConfiguration(
+        commandName: "eventkitcli",
         abstract: "A CLI to EventKit Framework",
-        subcommands: [Setup.self, AddEvent.self])
-    
+        subcommands: [Setup.self, AddEvent.self, GetEvents.self])
+
     enum Err: Error {
         typealias RawValue = String
         case NoPermission
@@ -48,10 +49,11 @@ struct AddEvent: AsyncParsableCommand {
     
     func run() async throws {
         let chrono = Chrono()
-        guard let startDate = chrono.parseDate(text: startDate, refDate: Date()) else {
+        let now = Date()
+        guard let startDate = chrono.parseDate(text: startDate, refDate: now) else {
             throw CLI.Err.UnsupportedDateFormat(startDate)
         }
-        guard let endDate = chrono.parseDate(text: endDate, refDate: startDate) else {
+        guard let endDate = chrono.parseDate(text: endDate, refDate: now) else {
             throw CLI.Err.UnsupportedDateFormat(endDate)
         }
 
@@ -65,10 +67,54 @@ struct AddEvent: AsyncParsableCommand {
         do {
             try store.save(event, span: .thisEvent, commit: true)
         } catch let e {
-            print("Failed to add event - title: \(title), startDate: (\(startDate.stringForDisplay())), endDate: (\(endDate.stringForDisplay()))")
+            print("Failed to add event - title: \"\(title)\", startDate: (\(startDate.asDateTimeString())), endDate: (\(endDate.asDateTimeString()))")
             throw CLI.Err.FailedToSave(e)
         }
         
-        print("Added event - title: \(title), startDate: (\(startDate.stringForDisplay())), endDate: (\(endDate.stringForDisplay()))")
+        print("Added event - title: \"\(title)\", startDate: (\(startDate.asDateTimeString())), endDate: (\(endDate.asDateTimeString()))")
+    }
+}
+
+struct GetEvents: AsyncParsableCommand {
+    static var configuration = CommandConfiguration(abstract: "Get events in range")
+
+    @Option(help: "Start date for search range")
+    var startDate: String
+
+    @Option(help: "The end date for search range")
+    var endDate: String
+
+    @Flag(help: "Whether or not to skip all-day events in results")
+    var excludeAllDay: Bool = false
+
+    func run() async throws {
+        let chrono = Chrono()
+        let now = Date()
+        guard let startDate = chrono.parseDate(text: startDate, refDate: now) else {
+            throw CLI.Err.UnsupportedDateFormat(startDate)
+        }
+        guard let endDate = chrono.parseDate(text: endDate, refDate: now) else {
+            throw CLI.Err.UnsupportedDateFormat(endDate)
+        }
+
+        let store = EKEventStore()
+        let predicate = store.predicateForEvents(withStart: startDate, end: endDate, calendars: nil)
+        let events = store.events(matching: predicate)
+
+        for e in events {
+            if e.isAllDay && excludeAllDay {
+                continue
+            }
+            print("\(businessFormat(e))")
+        }
+    }
+
+    func businessFormat(_ event: EKEvent) -> String {
+        let time = if event.isAllDay {
+            "isAllDay: true, startDate: \(event.startDate.asDateString()), endDate: \(event.endDate.asDateString())"
+        } else {
+            "startDate: \(event.startDate.asDateTimeString()), endDate: \(event.endDate.asDateTimeString())"
+        }
+        return "title: \"\(event.title ?? "NO TITLE")\", \(time)"
     }
 }
