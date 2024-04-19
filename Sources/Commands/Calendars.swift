@@ -23,7 +23,10 @@ struct GetCalendars: AsyncParsableCommand {
     
     @Flag(help: "Return the default calendar")
     var `default`: Bool = false
-
+    
+    @Option(name: .shortAndLong, help: "Return calendar with matching title")
+    var title: String?
+    
     func run() async throws {
         let store = EKEventStore()
         
@@ -33,6 +36,8 @@ struct GetCalendars: AsyncParsableCommand {
             } else {
                 []
             }
+        } else if let title {
+            store.calendars(for: .event).filter { cal in cal.title == title }
         } else {
             store.calendars(for: .event)
         }
