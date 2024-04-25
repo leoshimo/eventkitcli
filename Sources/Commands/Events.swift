@@ -95,6 +95,9 @@ struct CreateEvent: AsyncParsableCommand {
     @Option(name: [.customLong("calendar"), .short], help: "The calendar new event will be created in. Omit for default calendar")
     var calendarId: String?
     
+    @Flag(help: "Event is all day event")
+    var allDay: Bool = false
+    
     func run() async throws {
         let chrono = Chrono()
         let now = Date()
@@ -122,7 +125,8 @@ struct CreateEvent: AsyncParsableCommand {
         event.calendar = calendar
         event.startDate = startDate
         event.endDate = endDate
-        
+        event.isAllDay = allDay
+
         do {
             try store.save(event, span: .thisEvent, commit: true)
         } catch let e {
