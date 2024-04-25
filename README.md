@@ -8,20 +8,20 @@
 # Initial setup for permissions
 $ eventkitlcli setup
 
-# Adding Events:
-$ eventkitcli add-event --title "Hello World" \
+# Fetching Events
+$ eventkitcli events -s "today @ 0h" -e "today @ 24h"
+
+# Creating Events
+$ eventkitcli events create --title "Hello World" \
     --start-date "now" \
     --end-date "in one hour"
-$ eventkitcli add-event --title "My Event" \
-    --start-date "now" \
-    --end-date "in one hour"
-$ eventkitcli add-event --title "My Event" \
+$ eventkitcli events create --title "My Event" \
     --start-date "1/1/2024" \
     --end-date "1/2/2024"
-$ eventkitcli add-event --title "My Event" \
+$ eventkitcli events create --title "My Event" \
     --start-date "1/1/2024 8AM" \
     --end-date "in one hour"
-$ eventkitcli add-event --title "My Event" \
+$ eventkitcli events create --title "My Event" \
     --start-date "today at 9am" \
     --end-date "today at 11am"
 ```
