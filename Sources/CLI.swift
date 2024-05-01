@@ -7,7 +7,12 @@ struct CLI: AsyncParsableCommand {
     static var configuration = CommandConfiguration(
         commandName: "eventkitcli",
         abstract: "A CLI to EventKit Framework",
-        subcommands: [Setup.self, Events.self, Calendars.self])
+        subcommands: [
+            Setup.self,
+            Events.self,
+            Calendars.self,
+            Utils.self,
+        ])
 
     enum Err: Error {
         typealias RawValue = String
@@ -36,6 +41,11 @@ struct Setup: AsyncParsableCommand {
             throw CLI.Err.NoPermission
         }
     }
+}
+
+struct Utils: AsyncParsableCommand {
+    static var configuration = CommandConfiguration(abstract: "A CLI to EventKit Framework",
+                                                    subcommands: [ParseDate.self])
 }
 
 struct ParseDate: AsyncParsableCommand {
