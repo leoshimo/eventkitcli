@@ -54,10 +54,23 @@ struct ParseDate: AsyncParsableCommand {
     @Argument(help: "The date expression to parse")
     var date: String
 
+    @Option(name: [.customLong("refdate")], help: "The relative date to use. Defaults to current date")
+    var refDateString: String?
+
     func run() async throws {
         let chrono = Chrono()
-        let now = Date()
-        guard let date = chrono.parseDate(text: date, refDate: now) else {
+
+        var refDate: Date
+        if let refDateString {
+            guard let refDateParsed = chrono.parseDate(text: refDateString, refDate: Date()) else {
+                throw CLI.Err.UnsupportedDateFormat(date)
+            }
+            refDate = refDateParsed
+        } else {
+            refDate = Date() // default to now
+        }
+
+        guard let date = chrono.parseDate(text: date, refDate: refDate) else {
             throw CLI.Err.UnsupportedDateFormat(date)
         }
         print(date.asDateTimeString())
