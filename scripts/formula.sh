@@ -7,11 +7,11 @@ archive="eventkitcli-$version-macos-universal.tar.gz"
 sha="$(shasum -a 256 "dist/$archive" | cut -d ' ' -f 1)"
 cat <<FORMULA
 class Eventkitcli < Formula
-  desc "Read, create, and edit Apple Calendar events from the command line"
+  desc "Read, create, and edit Apple Calendar events"
   homepage "https://github.com/leoshimo/eventkitcli"
   url "https://github.com/leoshimo/eventkitcli/releases/download/v$version/$archive"
   sha256 "$sha"
-  depends_on :macos => :ventura
+  depends_on macos: :ventura
 
   def install
     bin.install "bin/eventkitcli"
