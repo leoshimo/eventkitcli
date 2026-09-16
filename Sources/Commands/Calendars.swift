@@ -9,16 +9,13 @@ import EventKit
 
 // TODO: Adopt subcommand aliases for shorthands https://github.com/apple/swift-argument-parser/issues/248
 struct Calendars: AsyncParsableCommand {
+    @OptionGroup var output: OutputOptions
     static var configuration = CommandConfiguration(commandName: "cal",
                                                     abstract: "Calendar commands",
                                                     subcommands: [
                                                         Get.self,
                                                     ],
                                                     defaultSubcommand: Get.self)
-    
-    enum OutputFormat: String, ExpressibleByArgument, CaseIterable {
-        case human, id
-    }
     
     struct Get: AsyncParsableCommand {
         static var configuration = CommandConfiguration(commandName: "get",
@@ -30,11 +27,10 @@ struct Calendars: AsyncParsableCommand {
         @Option(name: .shortAndLong, help: "Return calendar with matching title")
         var title: String?
         
-        @Option(name: .shortAndLong, help: "Output format")
-        var format: OutputFormat = .human
+        @OptionGroup var output: OutputOptions
         
         func run() async throws {
-            let store = EKEventStore()
+            let store = try authorizedStore()
             
             let calendars: [EKCalendar] = if `default` {
                 if let defaultCalendar = store.defaultCalendarForNewEvents {
@@ -48,12 +44,15 @@ struct Calendars: AsyncParsableCommand {
                 store.calendars(for: .event)
             }
             
+            if output.selectedFormat == .json {
+                try printJSON(calendars.map { CalendarRecord(id: $0.calendarIdentifier, title: $0.title, allowsContentModifications: $0.allowsContentModifications) })
+                return
+            }
             if calendars.isEmpty {
                 throw CLI.Err.NoCalendarsFound
             }
-            
             for c in calendars {
-                print(c.asString(in: format))
+                print(c.asString(in: output.selectedFormat))
             }
         }
         
@@ -62,12 +61,20 @@ struct Calendars: AsyncParsableCommand {
 }
 
 extension EKCalendar {
-    func asString(in format: Calendars.OutputFormat) -> String {
+    func asString(in format: EventFormat) -> String {
         switch format {
         case .human:
             "\(calendarIdentifier) - \(title)"
         case .id:
             "\(calendarIdentifier)"
+        case .json:
+            "" // JSON arrays are encoded by the command.
         }
     }
+}
+
+struct CalendarRecord: Encodable {
+    let id: String
+    let title: String
+    let allowsContentModifications: Bool
 }

@@ -1,0 +1,49 @@
+name: Build and release
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Test
+        run: swift test --force-resolved-versions
+      - name: Package universal executable
+        run: |
+          if [[ "$GITHUB_REF_TYPE" == tag ]]; then
+            ./scripts/package.sh "$GITHUB_REF_NAME"
+          else
+            ./scripts/package.sh
+          fi
+          version=$(dist/eventkitcli-*/bin/eventkitcli --version)
+          ./scripts/formula.sh "$version" > dist/eventkitcli.rb
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: eventkitcli-macos
+          path: |
+            dist/*.tar.gz
+            dist/*.sha256
+            dist/eventkitcli.rb
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: eventkitcli-macos
+          path: dist
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: gh release create "$RELEASE_TAG" dist/* --verify-tag --generate-notes --title "$RELEASE_TAG"

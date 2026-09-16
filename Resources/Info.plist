@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>CFBundleIdentifier</key><string>com.leoshimo.eventkitcli</string>
+  <key>CFBundleName</key><string>eventkitcli</string>
+  <key>CFBundleShortVersionString</key><string>0.1.0</string>
+  <key>NSCalendarsUsageDescription</key><string>Read, create, and edit calendar events you select on the command line.</string>
+  <key>NSCalendarsFullAccessUsageDescription</key><string>Read, create, and edit calendar events you select on the command line.</string>
+</dict></plist>
